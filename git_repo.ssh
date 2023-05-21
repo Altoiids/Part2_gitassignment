@@ -39,6 +39,13 @@ output=$(curl -H "Authorization: token $github_token" -u "$username:$password" "
   echo "Bad credentials error occurred. Ending the script."
   exit 1  
  fi
+ response_code=$(curl -H "Authorization: token $github_token" -u "$git config --global user.name:$pass" --write-out "%{http_code}" -o /dev/null "https://api.github.com/user/repos" -d '{"name":"'$reponame'"}')
+
+
+ if [[ "$response_code" != "200" ]]; then
+  echo "Bad credentials error occurred. Ending the script."
+  exit 1  
+ fi
 
 echo "press 1 to make a new file in this repo,  press 2 to initialise an empty repo press, 3 to initialise a repo with readme file"
 read -r input
