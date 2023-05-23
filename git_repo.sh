@@ -1,5 +1,3 @@
-
-
 #!/bin/bash
 
 
@@ -16,12 +14,7 @@ fi
 
 username=$(git config --global user.name)
 
-
-
-
 read -r -s -p "Enter your personal access token: " github_token
-echo
-read -r -s -p "Enter your password: " pass
 echo
 echo -e "For repo name you have to follow certain rules: \n1. Repo name should start with a capital letter\n2. Should have atleast 5 character\n3. Your repo name can only contain alphanumerics and "." "-" "_" "
 read -rp "Enter your repository name: " reponame
@@ -30,23 +23,21 @@ mkdir $reponame
 cd $reponame
 git init
 
-curl -H "Authorization: token $github_token" \-u "$git config --global user.name:$pass" https://api.github.com/user/repos -d '{"name":"'$reponame'"}' 
-git remote add origin git@github.com:$username/$reponame.git
-output=$(curl -H "Authorization: token $github_token" -u "$username:$password" "https://api.github.com/user/repos" -d '{"name":"'$reponame'"}')
+curl -L -X POST -H "Authorization: Bearer $github_token" https://api.github.com/user/repos -d "{\"name\":\"$reponame\"}"
+ 
 
+git remote add origin "https://$github_token@github.com/$username/$reponame.git"
 
- if echo "$output" | grep -q "Bad credentials"; then
+output=$(curl -L -X POST -H "Authorization: Bearer $github_token" https://api.github.com/user/repos -d "{\"name\":\"$reponame\"}")
+
+response_code=$(curl -s -o /dev/null -w "%{http_code}" -L -X POST -H "Authorization: Bearer $github_token" https://api.github.com/user/repos -d "{\"name\":\"$reponame\"}")
+
+if [[ "$response_code" != "422" ]]; then
   echo "Bad credentials error occurred. Ending the script."
   exit 1  
  fi
- response_code=$(curl -H "Authorization: token $github_token" -u "$git config --global user.name:$pass" --write-out "%{http_code}" -o /dev/null "https://api.github.com/user/repos" -d '{"name":"'$reponame'"}')
 
-
- if [[ "$response_code" != "200" ]]; then
-  echo "Bad credentials error occurred. Ending the script."
-  exit 1  
- fi
-
+ 
 echo "press 1 to make a new file in this repo,  press 2 to initialise an empty repo press, 3 to initialise a repo with readme file"
 read -r input
     if [ "$input" -eq 1 ]; then
@@ -70,5 +61,4 @@ read -r input
 
 else
     echo "Invalid Repo name"
-fi 
-
+fi
