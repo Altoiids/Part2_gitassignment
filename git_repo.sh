@@ -23,12 +23,12 @@ mkdir $reponame
 cd $reponame
 git init
 
-curl -L -X POST -H "Authorization: Bearer $github_token" https://api.github.com/user/repos -d "{\"name\":\"$reponame\"}"
- 
-
-git remote add origin "https://$github_token@github.com/$username/$reponame.git"
-
 output=$(curl -L -X POST -H "Authorization: Bearer $github_token" https://api.github.com/user/repos -d "{\"name\":\"$reponame\"}")
+git remote add origin "https://$github_token@github.com/$username/$reponame.git"
+  if echo "$output" | grep -q "creation failed."; then
+     echo "Duplicacy error occurred. Ending the script."
+     exit 1  
+  fi
 
 response_code=$(curl -s -o /dev/null -w "%{http_code}" -L -X POST -H "Authorization: Bearer $github_token" https://api.github.com/user/repos -d "{\"name\":\"$reponame\"}")
 
